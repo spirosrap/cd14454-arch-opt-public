@@ -29,9 +29,6 @@ pillow>=9.0.0                    # Image loading
 medmnist>=2.1.2                  # Benchmark medical image datasets
 
 # Model export and inference optimization
-docker>=7.0.0                    # For containerization with Triton Inference Server
 onnx>=1.15.0                     # Export PyTorch models
 onnxruntime>=1.16.0              # Run ONNX models efficiently
 tensorrt-cu12==10.0.1            # TensorRT backend for CUDA 12, CUDNN 8.9.2, NVIDIA driver 550, python 3.10
-tritonclient[http]>=2.59.0       # Client to access Triton server endpoints
-triton-model-analyzer==1.40.0    # Tool to analyze model memory in Triton Inference Server

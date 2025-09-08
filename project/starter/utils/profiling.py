@@ -69,7 +69,7 @@ class PerformanceProfiler:
             model: PyTorch model to profile
             input_tensor: Input tensor with any batch size for profiling
             num_runs: Number of timing measurements for statistical accuracy
-            warmup_runs: Number of warmup iterations to stabilize GPU performance
+            warmup_runs: Number of warmup iterations to stabilize performance
             
         Returns:
             Comprehensive timing dictionary containing:
@@ -93,11 +93,11 @@ class PerformanceProfiler:
             """Internal helper function for precise timing measurements."""
             times = []
             
-            # Warmup phase - essential for GPU performance stabilization
+            # Warmup phase - essential for performance stabilization
             with torch.no_grad():
                 for _ in range(warmup_runs):
                     if self.is_cuda:
-                        torch.cuda.synchronize()  # Ensure GPU operations complete
+                        torch.cuda.synchronize()  # Ensure operations complete
                     _ = call_model(model, input_data, self.use_amp)
                     if self.is_cuda:
                         torch.cuda.synchronize()
@@ -266,7 +266,7 @@ class PerformanceProfiler:
     
     def profile_memory_usage(self, model: nn.Module, input_tensor: torch.Tensor) -> Dict[str, Any]:
         """
-        Profile GPU memory usage during model inference.
+        Profile memory usage during model inference.
         
         Provides detailed memory analysis including model parameters, activations,
         and peak memory consumption. Critical for deployment planning and batch
@@ -278,7 +278,7 @@ class PerformanceProfiler:
             
         Returns:
             Dictionary containing:
-                - baseline_memory_mb: Initial GPU memory usage
+                - baseline_memory_mb: Initial memory usage
                 - peak_memory_mb: Maximum memory during inference
                 - memory_increase_mb: Additional memory required for inference
                 - component_breakdown: Detailed breakdown of memory consumers
@@ -334,9 +334,9 @@ class PerformanceProfiler:
             
         except RuntimeError as e:
             if "out of memory" in str(e).lower():
-                return {'error': 'GPU out of memory during profiling'}
+                return {'error': 'Out of memory during profiling'}
             else:
-                return {'error': f'GPU memory profiling failed: {str(e)}'}
+                return {'error': f'Memory profiling failed: {str(e)}'}
     
     def profile_with_pytorch_profiler(self, model: nn.Module, input_tensor: torch.Tensor,
                                      num_steps: int = 10) -> Dict[str, Any]:
@@ -358,12 +358,6 @@ class PerformanceProfiler:
                 - total_time_us: Total profiled time in microseconds
                 - profiler_data: Raw PyTorch profiler object for detailed analysis
         
-        Note:
-            Operation categorization helps identify optimization targets:
-            - Convolution operations: Often GPU-optimized, check kernel efficiency
-            - Matrix multiply: Benefits from Tensor Cores on modern GPUs
-            - Memory operations: May indicate data movement bottlenecks
-            
         Example:
             >>> profiler = PerformanceProfiler()
             >>> results = profiler.profile_with_pytorch_profiler(model, input_tensor)
@@ -386,7 +380,7 @@ class PerformanceProfiler:
                 with_stack=False,        # Disable stack traces for performance
                 with_flops=False         # Disable FLOP counting for cleaner results
             ) as prof:
-                # Warmup phase - critical for stable GPU performance
+                # Warmup phase - critical for stable performance
                 with torch.no_grad():
                     for _ in range(3):
                         _ = call_model(model, input_tensor, self.use_amp)
@@ -473,7 +467,7 @@ class PerformanceProfiler:
         elif any(pool in op_name for pool in ['pool', 'mean', 'avg', 'adaptive']):
             return 'pooling_ops'
         
-        # Matrix multiplication - benefits from Tensor Cores
+        # Matrix multiplication - benefits from specialized accelerators
         elif any(mm in op_name for mm in ['addmm', 'mm', 'bmm', 'linear', 'splitkreduce_kernel']):
             return 'matrix_multiply_ops'
         
@@ -545,7 +539,7 @@ class PerformanceProfiler:
                 
             except RuntimeError as e:
                 if "out of memory" in str(e).lower():
-                    results[f'batch_{batch_size}'] = {'error': 'GPU OOM'}
+                    results[f'batch_{batch_size}'] = {'error': 'OOM'}
                     break  # Stop testing larger batch sizes
                 else:
                     results[f'batch_{batch_size}'] = {'error': str(e)}

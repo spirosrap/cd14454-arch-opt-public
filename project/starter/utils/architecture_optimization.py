@@ -233,9 +233,8 @@ def apply_grouped_convolution_optimization(
         Model with grouped convolutions applied for enhanced efficiency
         
     Note:
-        Grouped convolutions work best with channels_last memory format and PyTorch AMP
-        for optimal GPU utilization. May introduce slight latency overhead but ensures
-        overall throughput for batch processing.
+        Grouped convolutions can be highly efficient on certain hardware backends, 
+        especially when used with memory formats like channels_last and mixed precision (AMP)
         
     Example:
         >>> model = create_baseline_model()
@@ -262,7 +261,7 @@ def apply_grouped_convolution_optimization(
     # Report optimization status and provide deployment tipes
     if replacements > 0:
         print(f"GROUPED CONV completed: Successfully applied to layers with {replacements} replacements. Skipped {skipped} layers.")
-        print("\nIMPORTANT: If not fone depthwise, conved groups requires PyTorch AMP for inference and channels_last to ensure throughput (but with some latency degradation).")
+        print("\nDEPLOYMENT TIP: For some hardware (like NVIDIA GPUs), grouped convolutions may require specific memory formats (channels_last) and mixed precision to achieve maximum throughput.")
     else:
         print("WARNING: GROUPED CONV not applied: No suitable layers found for replacement")
 
@@ -395,21 +394,20 @@ def apply_channel_optimization(
     """
     Apply channel-level optimizations for enhanced hardware efficiency.
 
-    Implements memory layout and activation optimizations to improve GPU utilization
+    Implements memory layout and activation optimizations to improve hardware utilization
     and reduce memory bandwidth requirements.
 
     Args:
         model: Model to optimize for hardware efficiency
-        enable_channels_last: Use NHWC memory layout for faster GPU convolutions
+        enable_channels_last: E.g., you'd use NHWC memory layout for faster GPU convolutions
         enable_inplace_relu: Convert ReLU layers to in-place for memory savings
     
     Returns:
         Hardware-optimized model with improved memory efficiency
         
     Note:
-        Channels last format significantly improves convolution performance on modern
-        GPUs but requires input tensors to be converted to the same format. In-place
-        ReLU reduces memory allocations during inference.
+        The 'channels last' memory format can significantly improve convolution performance on certain hardware 
+        (e.g., modern GPUs with specialized cores) but requires input tensors to be converted...
         
     Example:
         >>> model = create_baseline_model()
